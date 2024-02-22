@@ -32,5 +32,7 @@ Installing MicroPython on AI-Thinker NodeMCU ESP32-S2
     - `os.listdir()`
 5. To run the code you uploaded to the board:
     - `import your_fancy_script.py`
+6. To stop the code:
+    - `ctrl + x` or `activity bar --> pymakr --> DEVICES --> ... --> Stop script`
 6. To delete the script from the board:
     - `os.remove("file_name")`
