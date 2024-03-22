@@ -7,18 +7,18 @@
 @Version :   1.0
 @Contact :   uras.ayanoglu@edu.turkuamk.fi
 @License :   (C)Copyright 2024, Uras Ayanoglu
-@Desc    :   None
+@Desc    :   An RGB LED controller with a potentiometer and a button that displays the selected color and voltage on an LCD.
 @Platform:   AI-Thinker NodeMCU ESP12k ESP32-S2 on MicroPython v1.22.2
 '''
 
-from machine import ADC, Pin, PWM, I2C
+from machine import ADC, Pin, PWM, SoftI2C
+from lib_lcd1602_2004_with_i2c import LCD
 import time
-# from pcf8574_i2c import PCF8574_I2C # Import necessary libraries for AI-Thinker NodeMCU ESP12k ESP32-S2
-# from lcd_api import LcdApi # Import necessary libraries for AI-Thinker NodeMCU ESP12k ESP32-S2
 
 # Initialize ADC for potentiometer
 adc = ADC(Pin(7))  
 adc.atten(ADC.ATTN_11DB)  # For full range of 3.3V or 5V
+
 
 # Initialize PWM for RGB LED
 red = PWM(Pin(4), freq=5000)  
@@ -29,14 +29,21 @@ blue = PWM(Pin(6), freq=5000)
 button = Pin(3, Pin.IN)  
 
 # Initialize I2C for LCD (modify the pins as per your ESP32-S2 board)
-# i2c = I2C(scl=Pin(22), sda=Pin(21), freq=400000)
-# lcd = LcdApi(PCF8574_I2C(i2c, 0x27), 2, 16)  # Adjust the I2C address if needed
+
+scl_pin = 9 # pin number for SCL
+sda_pin = 8 # pin number for SDA
+
+# Create LCD object
+lcd = LCD(SoftI2C(scl=Pin(scl_pin), sda=Pin(sda_pin), freq=100000)) 
 
 color_names = ["Red", "Green", "Blue"]
 
 def update_lcd(color, voltage):
     lcd.clear()
-    lcd.putstr("Color: {}\nVoltage: {:.2f}V".format(color_names[color], voltage))
+    # Display color information on the first row (y=0)
+    lcd.puts("Color: {}".format(color_names[color]), y=0, x=0)
+    # Display voltage information on the second row (y=1)
+    lcd.puts("Voltage: {:.2f}V".format(voltage), y=1, x=0)
 
 # Variables to track button state and color selection
 last_button_state = 1
@@ -65,16 +72,17 @@ while True:
     last_button_state = button_state
 
     # Read potentiometer value and map to PWM range
-    pot_value = adc.read() * 1023 // 4095
+    pot_value = adc.read() * 1023 // 8191
 
     # Update the brightness of the selected LED
     update_led_brightness(current_color, pot_value)
 
     # Calculate the voltage (assuming 3.3V max for ADC)
-    # voltage = adc.read() * 3.3 / 4095
+    print(adc.read())
+    voltage = adc.read() * 3.3 / 8191
 
     # Update the LCD display
-    # update_lcd(current_color, voltage)
+    update_lcd(current_color, voltage)
 
     time.sleep(0.1)  # Small delay to reduce flickering
 
