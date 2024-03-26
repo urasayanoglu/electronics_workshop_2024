@@ -11,15 +11,13 @@ Look also from YouTube with search: [How to Connect an I2C Lcd Display to an Ard
 
 - [I2C LCD Arduino Tutorial](https://www.makerguides.com/character-i2c-lcd-arduino-tutorial/)
 
-Header pins should be already attached to the display, so you can skip the “soldering pins to the display” –part. 
+Header pins should be already attached to the display, so you can skip the “soldering pins to the display”
 
-**NOTE:** You only need to do either Part A or Part B, depending on which course you are attending! 
+**NOTE:** You only need to do either Part A or Part B, depending on which course you are attending!
 
-### Part A (For basics of programming microcontrollers) 
-
+### Part A (For basics of programming microcontrollers)
 Using an LCD display, an NTC thermistor and a light-dependent resistor (LDR), build a device that shows the temperature and the light intensity reading on the display. The device should have either continuous update for values or a switch so that the readings are updated when the switch is pushed. There should also be a switch to change the temperature reading between Celsius and Fahrenheit. 
 
-  
 
 ### Part B (For programming microcontrollers) 
 
