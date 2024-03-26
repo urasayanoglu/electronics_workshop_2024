@@ -47,8 +47,17 @@ def play_dash():
     led.value(0)
     time.sleep(0.2)
 
+def check_interrupt():
+    if button_pressed():
+        wait_for_button_release()
+        return True
+    return False
+
 def send_sos():
     for symbol in SOS_PATTERN:
+        if check_interrupt():
+            return
+
         if symbol == '.':
             play_dot()
         elif symbol == '-':
@@ -63,54 +72,40 @@ def send_morse_code(symbol):
                 play_dash()
         time.sleep(0.3)  # Inter-letter silence
 
-def get_button_press_duration():
-    start_time = time.time()
-    while button.value() == 0:
-        time.sleep(0.01)  # Small delay to avoid high CPU usage
-    return time.time() - start_time
-
-# Debouncing Function
-def is_button_pressed():
-    time.sleep(DEBOUNCE_TIME)
+def button_pressed():
     return button.value() == 0
 
-def get_button_state():
-    return button.value() == 0  # Button is active low due to pull-up resistor
+def wait_for_button_release():
+    while button_pressed():
+        time.sleep(0.01)
+
+def get_button_press_duration():
+    duration = 0
+    while button_pressed():
+        time.sleep(0.01)
+        duration += 0.01
+    return duration
 
 # Main Function
 def main():
-    sos_mode = True
-    button_pressed = False
-    last_press_time = 0
+    last_button_press_time = time.time()
 
     while True:
-        current_time = time.time()
-        button_state = get_button_state()
+        if button_pressed():
+            last_button_press_time = time.time()
+            press_duration = get_button_press_duration()
+            wait_for_button_release()
 
-        if button_state and not button_pressed:
-            # Button press detected
-            button_pressed = True
-            press_start_time = current_time
-            sos_mode = False
-
-        elif not button_state and button_pressed:
-            # Button release detected
-            button_pressed = False
-            press_duration = current_time - press_start_time
-            last_press_time = current_time
-
+            # Send Morse Code
             if press_duration >= DASH_LENGTH:
                 send_morse_code('-')
             else:
                 send_morse_code('.')
 
-        # Return to SOS mode if no button activity for a certain period
-        if not button_state and (current_time - last_press_time) > LETTER_PAUSE:
-            sos_mode = True
-
-        if sos_mode:
+        elif time.time() - last_button_press_time > LETTER_PAUSE:
+            # Send SOS if no button press for a certain duration
             send_sos()
 
-        time.sleep(0.01)  # Small delay for loop
+        time.sleep(0.01)
 
 main()
